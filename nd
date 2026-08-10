@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harsh AI | Professional Intelligent Paper Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF Library for PDF Download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center sticky top-0 z-40 shadow-xs">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 text-white p-2.5 rounded-xl font-bold flex items-center justify-center shadow-md shadow-indigo-100">
+                <i class="fa-solid fa-brain text-lg"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-indigo-700">Harsh<span class="text-slate-800">AI</span></h1>
+                <p class="text-xs text-slate-400 font-medium">Professional Edition</p>
+            </div>
+        </div>
+        <button onclick="toggleSidebar()" class="bg-indigo-50 text-indigo-600 px-4 py-2.5 rounded-xl font-semibold hover:bg-indigo-100 transition-all flex items-center gap-2">
+            <i class="fa-solid fa-users-gear"></i>
+            <span>Manage Students</span>
+        </button>
+    </nav>
+
+    <!-- Sidebar Drawer for Students -->
+    <div id="sidebar" class="fixed inset-y-0 right-0 w-80 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 p-6 border-l border-slate-200 flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold text-slate-800">Student Directory</h2>
+            <button onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 p-2">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+        <div class="flex gap-2 mb-6">
+            <input id="studentInput" type="text" placeholder="Enter student name..." class="w-full border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <button onclick="addStudent()" class="bg-indigo-600 text-white px-4 rounded-xl hover:bg-indigo-700 transition-all">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+        </div>
+        <div id="studentList" class="space-y-3 overflow-y-auto flex-1 custom-scrollbar pr-1">
+            <!-- Dynamically populated students -->
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-5xl mx-auto mt-8 px-6 pb-20">
+        
+        <!-- Dashboard Overview (Default) -->
+        <div id="dashboardView" class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-indigo-600 rounded-3xl p-6 text-white shadow-xl shadow-indigo-100">
+                    <p class="text-sm opacity-80 font-medium">Total Students</p>
+                    <h3 class="text-3xl font-bold mt-1" id="totalStudentsCount">0</h3>
+                </div>
+                <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200">
+                    <p class="text-sm text-slate-500 font-medium">System Engine</p>
+                    <h3 class="text-xl font-bold text-emerald-600 mt-1">Gemini AI Active</h3>
+                </div>
+                <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200">
+                    <p class="text-sm text-slate-500 font-medium">Storage Mode</p>
+                    <h3 class="text-xl font-bold text-indigo-600 mt-1">Offline Cached</h3>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-16 border border-slate-200 text-center shadow-xs flex flex-col items-center justify-center">
+                <div class="w-20 h-20 bg-indigo-50 text-indigo-500 rounded-full flex items-center justify-center text-3xl mb-4">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-800 mb-2">Welcome to Harsh AI</h2>
+                <p class="text-slate-500 max-w-md text-sm">Select or add a student from the "Manage Students" menu on the top right to start creating intelligent question papers.</p>
+            </div>
+        </div>
+
+        <!-- Active Student Workspace (Hidden initially) -->
+        <div id="studentView" class="hidden space-y-8">
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 flex justify-between items-center shadow-xs">
+                <div>
+                    <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">Active Workspace</span>
+                    <h2 class="text-2xl font-bold text-slate-800" id="activeStudentTitle">Student Name</h2>
+                </div>
+                <button onclick="showDashboard()" class="text-slate-500 hover:text-indigo-600 font-medium text-sm flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-xl">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Upload Panel -->
+                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up text-indigo-600"></i> Upload Notes / Books
+                    </h3>
+                    <div class="border-2 border-dashed border-indigo-200 rounded-2xl p-10 text-center cursor-pointer hover:border-indigo-400 bg-indigo-50/30 transition-all" onclick="document.getElementById('fileInput').click()">
+                        <i class="fa-solid fa-images text-3xl text-indigo-500 mb-3"></i>
+                        <p class="text-sm font-semibold text-slate-700">Click to select multiple images</p>
+                        <p class="text-xs text-slate-400 mt-1">Supports JPG, PNG formats</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" class="hidden">
+                        <div id="fileNamesDisplay" class="mt-4 text-xs font-bold text-indigo-600"></div>
+                    </div>
+                    <button onclick="generateExamPaper()" id="genBtn" class="w-full mt-6 bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Exam Paper
+                    </button>
+                </div>
+
+                <!-- Student Drive Panel -->
+                <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xs flex flex-col">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-amber-500"></i> Student Drive (Saved Papers)
+                    </h3>
+                    <div id="studentDriveList" class="space-y-3 overflow-y-auto flex-1 max-h-[300px] custom-scrollbar pr-1">
+                        <p class="text-sm text-slate-400 italic">No papers saved in drive yet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Box -->
+            <div id="resultBox" class="hidden bg-white rounded-3xl p-8 border border-slate-200 shadow-xs">
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h3 class="font-bold text-slate-800 text-lg">✨ AI Generated Question Paper</h3>
+                    <button onclick="downloadPDF()" class="bg-slate-900 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-black transition-all text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-download"></i> Download PDF
+                    </button>
+                </div>
+                <div id="resultContent" class="text-slate-700 whitespace-pre-line leading-relaxed text-base bg-slate-50 p-6 rounded-2xl border border-slate-100"></div>
+                <button onclick="saveToCurrentStudentDrive()" class="mt-6 w-full bg-emerald-600 text-white py-3.5 rounded-xl font-bold hover:bg-emerald-700 transition-all flex justify-center items-center gap-2 shadow-lg shadow-emerald-100">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Paper to Student Drive
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        const API_KEY = 'AQ.Ab8RN6Il4158r5yzKlClSJ2LRFerEux0TVYvPaJ_Tv-CdLEFjQ';
+        let students = JSON.parse(localStorage.getItem('harsh_ai_students')) || [];
+        let activeStudentIndex = null;
+        let selectedImages = [];
+        let currentGeneratedText = "";
+
+        // UI Controls
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('translate-x-full');
+        }
+
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            selectedImages = Array.from(e.target.files);
+            document.getElementById('fileNamesDisplay').innerText = selectedImages.length + " files selected successfully.";
+        });
+
+        function addStudent() {
+            const input = document.getElementById('studentInput');
+            if(!input.value.trim()) return alert("Please enter a student name.");
+            students.push({ name: input.value.trim(), drive: [] });
+            input.value = "";
+            saveAndRender();
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('harsh_ai_students', JSON.stringify(students));
+            document.getElementById('totalStudentsCount').innerText = students.length;
+            
+            const list = document.getElementById('studentList');
+            if(students.length === 0) {
+                list.innerHTML = `<p class="text-sm text-slate-400 text-center py-4">No students added yet.</p>`;
+                return;
+            }
+            list.innerHTML = students.map((s, idx) => `
+                <div onclick="openStudentWorkspace(${idx})" class="p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-indigo-50 hover:border-indigo-200 transition-all flex justify-between items-center group">
+                    <div>
+                        <h4 class="font-bold text-slate-800 group-hover:text-indigo-700">${s.name}</h4>
+                        <span class="text-xs text-slate-400 font-medium">${s.drive.length} papers in drive</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-xs text-slate-400 group-hover:text-indigo-600"></i>
+                </div>
+            `).join('');
+        }
+
+        function openStudentWorkspace(index) {
+            activeStudentIndex = index;
+            const student = students[index];
+            document.getElementById('activeStudentTitle').innerText = student.name;
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('studentView').classList.remove('hidden');
+            toggleSidebar();
+            renderStudentDrive();
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboardView').classList.remove('hidden');
+            document.getElementById('studentView').classList.add('hidden');
+            document.getElementById('resultBox').classList.add('hidden');
+        }
+
+        // AI Generation Logic
+        async function generateExamPaper() {
+            if(selectedImages.length === 0) return alert("Please select at least one image file.");
+            
+            const genBtn = document.getElementById('genBtn');
+            genBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Analyzing Content...`;
+            genBtn.disabled = true;
+
+            try {
+                const imagePromises = selectedImages.map(file => new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve({ inline_data: { mime_type: file.type, data: reader.result.split(',')[1] } });
+                    reader.readAsDataURL(file);
+                }));
+
+                const imageDataList = await Promise.all(imagePromises);
+
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: "Analyze the attached pages carefully. Create a professional, formal school exam paper based on these topics with unique modified questions and sections." },
+                                ...imageDataList
+                            ]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                if(data.candidates && data.candidates[0].content) {
+                    currentGeneratedText = data.candidates[0].content.parts[0].text;
+                    document.getElementById('resultContent').innerText = currentGeneratedText;
+                    document.getElementById('resultBox').classList.remove('hidden');
+                } else {
+                    alert("Failed to fetch response from AI. Please try again.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error or invalid API execution.");
+            } finally {
+                genBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> Generate Exam Paper`;
+                genBtn.disabled = false;
+            }
+        }
+
+        function saveToCurrentStudentDrive() {
+            if(activeStudentIndex === null || !currentGeneratedText) return;
+            const dateStr = new Date().toLocaleDateString();
+            students[activeStudentIndex].drive.push({ title: `Exam Paper - ${dateStr}`, content: currentGeneratedText });
+            saveAndRender();
+            renderStudentDrive();
+            alert("Paper successfully saved to student drive!");
+        }
+
+        function renderStudentDrive() {
+            const student = students[activeStudentIndex];
+            const driveDiv = document.getElementById('studentDriveList');
+            if(student.drive.length === 0) {
+                driveDiv.innerHTML = `<p class="text-sm text-slate-400 italic">No papers saved in drive yet.</p>`;
+                return;
+            }
+            driveDiv.innerHTML = student.drive.map((paper, pIdx) => `
+                <div class="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center text-sm">
+                    <span class="font-semibold text-slate-700">${paper.title}</span>
+                    <button onclick="loadPaperFromDrive(${pIdx})" class="bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-100">View</button>
+                </div>
+            `).join('');
+        }
+
+        function loadPaperFromDrive(pIdx) {
+            const paper = students[activeStudentIndex].drive[pIdx];
+            currentGeneratedText = paper.content;
+            document.getElementById('resultContent').innerText = currentGeneratedText;
+            document.getElementById('resultBox').classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const textLines = doc.splitTextToSize(currentGeneratedText, 170);
+            doc.text(textLines, 20, 20);
+            doc.save("Harsh_AI_Exam_Paper.pdf");
+        }
+
+        // Initialize state on load
+        saveAndRender();
+    </script>
+</body>
+</html>
